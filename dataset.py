@@ -31,7 +31,7 @@ class MyDataset(torch.utils.data.Dataset):  # 创建自己的类：MyDataset,这
     def __len__(self):  # 这个函数也必须要写，它返回的是数据集的长度，也就是多少张图片，要和loader的长度作区分
         return len(self.imgs)
 
-def get_data(batch_size, root='./data_9_COVID2/'):
+def get_data(batch_size, root=''):
     print(root + 'data_2_train.txt')
     train_data = MyDataset(datatxt=root + 'data_2_train.txt', transform = transforms.Compose([transforms.Resize((224, 224)),  # 缩放
                     transforms.RandomCrop(224, padding=4),  # 裁剪
@@ -55,7 +55,7 @@ def get_data(batch_size, root='./data_9_COVID2/'):
     train_loader = DataLoader(dataset=train_data, batch_size=batch_size, shuffle=True, num_workers=4,
                             pin_memory=True)
     val_loader = DataLoader(dataset=val_data, batch_size=batch_size, shuffle=True, num_workers=4,pin_memory=True) #batch_size单次训练用的样本数            shuffle:先对batch内打乱,再按顺序取batch
-    test_loader = DataLoader(dataset=test_data, batch_size=batch_size)
+    test_loader = DataLoader(dataset=test_data, batch_size=batch_size,shuffle=True)
 
     return train_loader, val_data, test_loader
 

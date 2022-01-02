@@ -1,6 +1,6 @@
 import torch.nn.functional as F
 import torch.optim as optim
-from models import resnet,senet,densenet
+from models import resnet,senet,densenet,vgg
 from utils import Trainer,Save_Dir
 from dataset import get_data
 import argparse
@@ -14,48 +14,43 @@ def inplace_relu(m):
     if classname.find('ReLU') != -1:
         m.inplace=True
 
-def main(batch_size,lr):
-    train_loader, val_loader, test_loader = get_data(batch_size)
+def main(batch_size,lr,epoch,multi_gpus,data_path):
+    train_loader, val_loader, test_loader = get_data(batch_size,root=data_path)
     torch.backends.cudnn.benchmark = True
     torch.cuda.empty_cache()
-    print('模型开始导入')
+    print('Strart Import Model...')
 
-    model =senet.se_resnet50()
+    model =senet.se_resnet50(num_classes=2)
 
-    print('模型导入成功')
+    print('Import Model Success...')
 
     model = model.cuda()
-#这段代码一般写在读取数据之前，torch.device代表将torch.Tensor分配到的设备的对象。
-# torch.device包含一个设备类型（‘cpu’或‘cuda’）和可选的设备序号。如果设备序号不存在，则为当前设备。
+
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-    if torch.cuda.device_count() > 1:
-        model = nn.DataParallel(model)
+    if multi_gpus:
+        if torch.cuda.device_count() > 1:
+            model = nn.DataParallel(model)
     model.to(device)
-    # models.to(device)  # 使用序号为1的GPU
-    # 这也是一个优化语句，注释之后效果可能会更好点
+
     model.apply(inplace_relu)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr, weight_decay=1e-5)
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.9)       #step_size：多少个周期后学习率发生改变  gamma:学习率如何改变
 
-    print('模型开始训练')
+    print('Start Trainning...')
     trainer = Trainer(model, optimizer, F.cross_entropy)
 
-    trainer.loop(2, train_loader, test_loader, scheduler)
-    print('模型训练结束')
-
-
-def adjust_learning_rate(optimizer, epoch):
-    """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
-    lr = args.lr * (0.1 ** (epoch // 30))
-    for param_group in optimizer.param_groups:
-        param_group['lr'] = lr
+    trainer.loop(epoch, train_loader, test_loader, scheduler)
+    print('Trainning End...')
 
 
 if __name__ == '__main__':
 
-    p = argparse.ArgumentParser()
-    p.add_argument("--batchsize", type=int, default=32)
-    p.add_argument("--lr", type=float, default=0.01)
-    args = p.parse_args()
-    main(args.batchsize,args.lr)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--batchsize", type=int, default=64)
+    parser.add_argument("--lr", type=float, default=0.01)
+    parser.add_argument("--epoch", type=float, default=10)
+    parser.add_argument("--multi-gpus", type=float, default=True)
+    parser.add_argument("--data_path", type=str, default='D:/data_9_COVID2/')
+    args =parser.parse_args()
+    main(args.batchsize,args.lr,args.epoch,args.multi_gpus,args.data_path)
 
