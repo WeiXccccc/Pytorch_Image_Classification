@@ -81,7 +81,7 @@ class Trainer(object):
                 Test_Pred_Conf.append(pred_conf.data.cpu().numpy())
                 Pred.append(pred.data.cpu().numpy())
 
-            print(">>>[{}] loss: {:.4f}/accuracy: {:.4f} precision:{:.4f} recall: {:.4f} F1 score: {:.4f}".format(mode, sum(loop_loss), sum(accuracy) / len(data_loader.dataset),sum(precision)/len(precision),sum(recall)/len(recall),sum(F1)/len(F1)))
+            print(">>>[{}] loss: {:.4f} accuracy: {:.4f} precision:{:.4f} recall: {:.4f} F1 score: {:.4f}".format(mode, sum(loop_loss), sum(accuracy) / len(data_loader.dataset),sum(precision)/len(precision),sum(recall)/len(recall),sum(F1)/len(F1)))
 
         return mode, sum(loop_loss), sum(accuracy) / len(data_loader.dataset),  Test_Target , Test_Pred_Conf, Pred
 

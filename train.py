@@ -14,13 +14,15 @@ def inplace_relu(m):
     if classname.find('ReLU') != -1:
         m.inplace=True
 
-def main(batch_size,lr,epoch,multi_gpus,data_path):
+def main(batch_size,lr,epoch,multi_gpus,data_path,weight):
     train_loader, val_loader, test_loader = get_data(batch_size,root=data_path)
     torch.backends.cudnn.benchmark = True
     torch.cuda.empty_cache()
     print('Strart Import Model...')
 
     model =senet.se_resnet50(num_classes=2)
+
+
 
     print('Import Model Success...')
 
@@ -30,6 +32,10 @@ def main(batch_size,lr,epoch,multi_gpus,data_path):
     if multi_gpus:
         if torch.cuda.device_count() > 1:
             model = nn.DataParallel(model)
+            if weight != '':
+                pretained_model = torch.load(weight)
+                model.load_state_dict(pretained_model)
+                print('Load weight:' + weight)
     model.to(device)
 
     model.apply(inplace_relu)
@@ -51,6 +57,7 @@ if __name__ == '__main__':
     parser.add_argument("--epoch", type=float, default=10)
     parser.add_argument("--multi-gpus", type=float, default=True)
     parser.add_argument("--data_path", type=str, default='D:/data_9_COVID2/')
+    parser.add_argument("--weight", type=str, default='runs/exp2/weights/model_epoch_10.pkl')
     args =parser.parse_args()
-    main(args.batchsize,args.lr,args.epoch,args.multi_gpus,args.data_path)
+    main(args.batchsize,args.lr,args.epoch,args.multi_gpus,args.data_path,args.weight)
 
