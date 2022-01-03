@@ -57,7 +57,7 @@ if __name__ == '__main__':
     parser.add_argument("--epoch", type=float, default=10)
     parser.add_argument("--multi-gpus", type=float, default=True)
     parser.add_argument("--data_path", type=str, default='D:/data_9_COVID2/')
-    parser.add_argument("--weight", type=str, default='runs/exp2/weights/model_epoch_10.pkl')
+    parser.add_argument("--weight", type=str, default='')
     args =parser.parse_args()
     main(args.batchsize,args.lr,args.epoch,args.multi_gpus,args.data_path,args.weight)
 
